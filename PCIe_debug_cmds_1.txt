@@ -1,0 +1,18 @@
+
+
+1.) lspci command
+
+	# lspci
+	# lspci -t -> it gives tree
+	# lspci -s 01:00.0 -> to see only one B/D/F
+	# lspci -v -> to get more detailed
+	# lspci -vvv
+	# lspci -xxx -> to get configuration space register dump (256 bytes)
+	# lspci -xxxs 01:00.0
+	# lspci -k
+
+	# lspci -vmm
+
+	# lspci -xnn
+	
+	
