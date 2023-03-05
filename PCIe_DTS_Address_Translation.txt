@@ -1,0 +1,112 @@
+
+PCI Host Bridge
+=================
+
+This page describes the Host/PCI bridge node.
+
+	pci@0x10180000 {
+        compatible = "arm,versatile-pci-hostbridge", "pci";
+        reg = <0x10180000 0x1000>;
+        interrupts = <8 0>;
+        bus-range = <0 0>;
+    };
+	
+PCI Bus numbering
+------------------
+Each PCI bus segment is uniquely numbered, and the bus numbering 
+is exposed in the pci node by using the bus-range property, which
+contains two cells. The first cell gives the bus number assigned 
+to this node, and the second cell gives the maximum bus number of
+any of the subordinate PCI busses.
+The sample machine has a single pci bus, so both cells are 0.
+
+    pci@0x10180000 {
+        compatible = "arm,versatile-pci-hostbridge", "pci";
+        reg = <0x10180000 0x1000>;
+        interrupts = <8 0>;
+        bus-range = <0 0>;
+    };
+	
+PCI Address Translation
+--------------------------
+PCI address space is completely separate from the CPU address space,
+so address translation is needed to get from a PCI address to a CPU
+address. As always, this is done using the range, #address-cells, and
+#size-cells properties.
+
+    pci@0x10180000 {
+        compatible = "arm,versatile-pci-hostbridge", "pci";
+        reg = <0x10180000 0x1000>;
+        interrupts = <8 0>;
+        bus-range = <0 0>;
+        #address-cells = <3>
+        #size-cells = <2>;
+        ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+                  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+                  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+    };
+	
+PCI addresses or child addresses use 3 cells. The three cells are labeled as below.
+	-- phys.hi, 
+	-- phys.mid
+	-- phys.low
+
+"Phys.hi" is bit field. PCI address range is encoded into "phys.mid" and "phys.low".
+PCI addresses are 64 bits wide.
+
+	-- phys.hi cell: npt000ss bbbbbbbb dddddfff rrrrrrrr
+	-- phys.mid cell: hhhhhhhh hhhhhhhh hhhhhhhh hhhhhhhh
+	-- phys.low cell: llllllll llllllll llllllll llllllll
+	
+Bit fields of "phys.hi" are as below.
+
+	n: relocatable region flag (doesn't play a role here)
+	p: prefetchable (cacheable) region flag
+	t: aliased address flag (doesn't play a role here)
+	ss: space code
+		00: configuration space
+		01: I/O space
+		10: 32 bit memory space
+		11: 64 bit memory space
+		
+	bbbbbbbb: The PCI bus number. PCI may be structured hierarchically. So we may have 
+	PCI/PCI bridges which will define sub busses.
+	
+	ddddd: The device number, typically associated with IDSEL signal connections.
+	
+	fff: The function number. Used for multifunction PCI devices.
+
+	rrrrrrrr: Register number; used for configuration cycles.
+	
+For the purpose of PCI address translation, the important fields are p and ss. The value of
+p and ss in phys.hi determines which PCI address space is being accessed.
+
+Example: -
+	pcie_3: pcie@161c1000 {
+		compatible = "samsung,exynos-v920-pcie-rc";
+		....
+		....
+		ranges = <0x82000000 0 0x70000000 0 0x70000000 0 0x0FFFD000>;
+		....
+	};
+
+In the ranges field, the first value 0x82000000 is a bit fiels.
+	0x82 -> 1000 0010 (npt000ss)
+	So, the bit field 0x82000000 specifies non-prefetchable, 32-bit memory space.
+	
+The second and third value i.e. "0 0x70000000" is high and low parts of the 64 bit PCI address
+to be mapped in. As the high part of address is 0, so actual address is 0x70000000.
+
+The fourth and fifth value specifies the address on the CPU's bus to map the segment of the PCI
+bus. Thus PCI address 0x70000000 maps CPU bus at address 0x70000000. 
+For a 32-bit machine, instead of 4th and 5th value in "ranges", there will be only 4th value.
+
+The sixth and seventh value (i.e. "0 0x0FFFD000" = 0x0FFFD000 or 255 MB) specifies size of the 
+segment to map in.
+
+Thus in case of PCIe, address-cells = 3 and size-cells = 2 is used generally.
+
+Further Reading: -
+https://elinux.org/Device_Tree_Usage#PCI_Address_Translation
+ 
+This URL covers PCI DMA mapping and interrupt mapping also.
