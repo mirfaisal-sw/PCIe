@@ -1,0 +1,6 @@
+
+
+Hotplug:-
+---------
+Any device that can be connected to a running computer and begin operating immediately is a device that can be hot plugged.
+A common example device that can hot plug safely is one with a USB connection.
