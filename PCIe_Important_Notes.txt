@@ -1,0 +1,6 @@
+
+
+PCIe Important Notes: -
+========================
+1.) We need to flush write buffers found in PCI bridges (such as by reading a register's value
+    after writing it).
