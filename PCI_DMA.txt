@@ -1,0 +1,16 @@
+
+
+	1) https://www.youtube.com/watch?v=WcEvAvtXL94
+	   https://www.youtube.com/watch?v=TzzzM97L4HI
+	   https://www.youtube.com/watch?v=k4kw1h6XetU
+	   https://green-electrons.com/ZYNQ_AXI/
+		
+	   https://github.com/Xilinx/linux-xlnx/blob/master/drivers/dma/dma-axi-dmac.c
+
+	2) https://www.youtube.com/watch?v=Xkpu8BXi3aI
+	3) https://www.youtube.com/watch?v=_HvxP0TSxNg
+
+	4) DMA kernel APIs: -
+		https://www.youtube.com/watch?v=yJg-DkyH5CM
+
+		https://mjmwired.net/kernel/Documentation/DMA-API-HOWTO.txt

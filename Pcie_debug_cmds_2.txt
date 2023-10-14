@@ -1,0 +1,8 @@
+
+
+	1) Setpci: -
+
+	#setpci --dumpregs
+
+	# ./setpci -s 00:13.0 VENDOR_ID.W    #Read value
+	O/p - 8086

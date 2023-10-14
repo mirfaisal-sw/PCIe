@@ -1,0 +1,5 @@
+
+
+	PCIe link speeds: -
+	====================
+	Gen1: 2.5Gbps, Gen2: 5Gbps, Gen3: 8Gbps, Gen4: 16Gbps, Gen5: 32Gbps

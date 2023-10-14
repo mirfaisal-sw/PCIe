@@ -1,0 +1,172 @@
+
+
+1.) lspci command
+
+	# lspci
+	# lspci -t -> it gives tree
+	# lspci -s 01:00.0 -> to see only one B/D/F
+	# lspci -v -> to get more detailed
+	# lspci -vvv
+	# lspci -xxx -> to get configuration space register dump (256 bytes)
+	# lspci -xxxs 01:00.0
+	# lspci -k
+
+	# lspci -vmm
+
+	# lspci -xnn
+	
+	
+2) Understanding "lspci -t" command: -
+
+Note - Output taken from "FCA_R1 hardware, Date - 18032023.
+
+#lspci -vt 
+O/p - 
+-[0000:00]-+-00.0  Device 8086:5af0
+           +-00.1  Device 8086:5a8c
+           +-02.0  Device 8086:5a84
+           +-03.0  Device 8086:5a88
+           +-0e.0  Device 8086:5a98
+           +-0f.0  Device 8086:5a9a
+           +-0f.1  Device 8086:5a9c
+           +-0f.2  Device 8086:5a9e
+           +-11.0  Device 8086:5aa2
+           +-12.0  Device 8086:5ae3
+           +-13.0-[01]----00.0  Device 1179:021f
+           +-13.1-[02]--+-00.0  Device 1b4b:2b43
+           |            \-00.1  Device 1b4b:2b44
+           +-14.0-[03]--
+           +-15.0  Device 8086:5aa8
+           +-15.1  Device 8086:5aaa
+           +-16.0  Device 8086:5aac
+           +-16.1  Device 8086:5aae
+           +-16.2  Device 8086:5ab0
+           +-16.3  Device 8086:5ab2
+           +-17.0  Device 8086:5ab4
+           +-17.1  Device 8086:5ab6
+           +-17.2  Device 8086:5ab8
+           +-17.3  Device 8086:5aba
+           +-18.0  Device 8086:5abc
+           +-18.1  Device 8086:5abe
+           +-18.2  Device 8086:5ac0
+           +-18.3  Device 8086:5aee
+           +-19.0  Device 8086:5ac2
+           +-19.1  Device 8086:5ac4
+           +-19.2  Device 8086:5ac6
+           +-1a.0  Device 8086:5ac8
+           +-1b.0  Device 8086:5aca
+           +-1c.0  Device 8086:5acc
+           +-1e.0  Device 8086:5ad0
+           +-1f.0  Device 8086:5ae8
+           \-1f.1  Device 8086:5ad4
+
+PCI devices are addressed using bus, device, and function numbers, and they are identified via vendorIDs, deviceIDs, and class codes.
+In tuple (XX:YY.Z) at the beginning of each entry in the preceding output. XX stands for the PCI bus number. A PCI domain can host up to 256 buses.
+YY is the PCI device number. Each bus can connect to a maximum of 32 PCI devices. Each device can, in turn, implement up to eight functions represented by Z.
+
+# cd /sys/devices/pci0000:0     (Address domain - 0000, Bus - 0)
+# ls
+O/p - 
+0000:00:00.0 0000:00:11.0 0000:00:16.1 0000:00:18.1 0000:00:1c.0
+0000:00:00.1 0000:00:12.0 0000:00:16.2 0000:00:18.2 0000:00:1e.0
+0000:00:02.0 0000:00:13.0 0000:00:16.3 0000:00:18.3 0000:00:1f.0
+0000:00:03.0 0000:00:13.1 0000:00:17.0 0000:00:19.0 0000:00:1f.1
+0000:00:0e.0 0000:00:14.0 0000:00:17.1 0000:00:19.1 firmware_node
+0000:00:0f.0 0000:00:15.0 0000:00:17.2 0000:00:19.2 pci_bus
+0000:00:0f.1 0000:00:15.1 0000:00:17.3 0000:00:1a.0 power
+0000:00:0f.2 0000:00:16.0 0000:00:18.0 0000:00:1b.0 uevent
+
+[Thus at pci_bus: 0000:00, around 36 PCI devices are connected. ]
+
+===================================
+* Analyze Bridge device: 00:13.0  *
+===================================
+# cd /sys/devices/pci0000:00/0000:00:13.0  (Device on Bus 0 : 0000:00:13.0)
+# ls
+O/p - 
+0000:00:13.0:pcie001     d3cold_allowed  local_cpulist rescan
+0000:00:13.0:pcie002     device          local_cpus    reset
+0000:00:13.0:pcie004     dma_mask_bits   modalias      resource
+0000:01:00.0             driver          msi_bus       subsystem
+broken_parity_status     driver_override msi_irqs      subsystem_device
+class                    enable          pci_bus       subsystem_vendor
+config                   firmware_node   power         uevent
+consistent_dma_mask_bits irq             remove        vendor
+
+# cat class
+O/p - 0x060400
+{ Here class code 0x06 represents "Bridge".
+  Sub-class code 0x04 and Prog I/F - 0x00 represnets PCI-to-PCI bridge.
+}
+
+#########################################
+# Class Code Register is of 24 bits.    #
+# Bits [23:16] - Class code             #
+# Bits [15:8] - Sub-Class code          #
+# Bits [7:0] - Prog. I/F                #
+#########################################
+
+# cat vendor
+O/p - Ox8086
+# cat device
+O/p - 0x5ad8
+
+===================================================================
+* Analyze Endpoint device - 01:00.0, connected at Bridge - 00:13.0
+===================================================================
+=> From above output, we can see there is an entry "0000:01:00.0". Let us see, which device it is.
+# cd /sys/devices/pci0000:00/0000:00:13.0/0000:01:00.0
+# cat class
+O/p - 0x020000
+{ Class code - 0x02 represents "Ethernet Controller}
+#cat vendor 
+O/p - 0x1179 (Toshiba)
+#cat device
+O/p - 0x021f
+
+===================================
+* Analyze Bridge device: 00:13.1  *
+===================================
+# cd /sys/devices/pci0000:00/0000:00:13.1  (Device on Bus 0 : 0000:00:13.1)
+# ls
+O/p - 
+0000:00:13.1:pcie001     d3cold_allowed  local_cpus resource
+0000:00:13.1:pcie002     device          modalias   subsystem
+0000:00:13.1:pcie004     dma_mask_bits   msi_bus    subsystem_device
+0000:02:00.0             driver          msi_irqs   subsystem_vendor
+0000:02:00.1             driver_override pci_bus    uevent
+broken_parity_status     enable          power      vendor
+class                    firmware_node   remove
+config                   irq             rescan
+
+# cat class
+O/p - 0x060400
+{ Class code - 06 means "Bridge Device". }
+# cat vendor
+O/p - 0x8086
+# cat device
+O/p - 0x5ad9
+
+===================================================================
+* Analyze Endpoint device - 02:00.0, connected at Bridge - 00:13.1
+===================================================================
+# cd /sys/devices/pci0000:00/0000:00:13.1/0000:02:00.0
+# cat class
+O/p - 0x020000
+{Class code - 0x02 represents Ethernet controller.}
+# cat vendor
+O/p - 0x1b4b
+# cat device
+O/p - 0x2b43
+
+===================================================================
+* Analyze Endpoint device - 02:00.1, connected at Bridge - 00:13.1
+===================================================================
+# cd /sys/devices/pci0000:00/0000:00:13.1/0000:02:00.1
+# cat class
+O/p - 0x020000
+{Class code - 0x02 represents Ethernet controller.}
+# cat vendor
+O/p - 0x1b4b 
+# cat device
+O/p - 0x2b44
